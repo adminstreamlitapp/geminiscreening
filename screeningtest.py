@@ -59,14 +59,9 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_doc(file):
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".doc") as temp:
-            temp.write(file.read())
-            temp_path = temp.name
-        
-        with open(temp_path, "rb") as doc_file:
-            result = mammoth.extract_raw_text(doc_file)
-            text = result.value
-        return text
+        # Use mammoth to convert DOC to plain text
+        result = mammoth.extract_raw_text(file)
+        return result.value
     except Exception as e:
         st.error(f"Error extracting text from DOC file: {e}")
         return ""
