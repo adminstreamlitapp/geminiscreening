@@ -2,6 +2,6 @@ streamlit
 pandas
 python-docx
 PyPDF2
-google-generative-ai
 python-dotenv
+google-generativeai
 mammoth
