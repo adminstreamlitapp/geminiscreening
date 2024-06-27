@@ -7,8 +7,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import re
 import io
-import pypandoc
-import tempfile
+import mammoth
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -60,11 +59,14 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_doc(file):
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp:
-            temp.write(pypandoc.convert_file(file.name, 'docx'))
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".doc") as temp:
+            temp.write(file.read())
             temp_path = temp.name
         
-        return extract_text_from_docx(temp_path)
+        with open(temp_path, "rb") as doc_file:
+            result = mammoth.extract_raw_text(doc_file)
+            text = result.value
+        return text
     except Exception as e:
         st.error(f"Error extracting text from DOC file: {e}")
         return ""
