@@ -7,7 +7,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import re
 import io
-from comtypes.client import CreateObject
+import pypandoc
 import tempfile
 
 # Load environment variables from a .env file
@@ -60,19 +60,11 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_doc(file):
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".doc") as temp:
-            temp.write(file.read())
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp:
+            temp.write(pypandoc.convert_file(file.name, 'docx'))
             temp_path = temp.name
         
-        word = CreateObject("Word.Application")
-        word.Visible = False
-        doc = word.Documents.Open(temp_path)
-        text = doc.Range().Text
-        doc.Close(False)
-        word.Quit()
-        
-        os.remove(temp_path)
-        return text
+        return extract_text_from_docx(temp_path)
     except Exception as e:
         st.error(f"Error extracting text from DOC file: {e}")
         return ""
