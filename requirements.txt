@@ -4,4 +4,4 @@ python-docx
 PyPDF2
 google-generative-ai
 python-dotenv
-pypandoc
+mammoth
