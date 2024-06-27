@@ -59,8 +59,8 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_doc(file):
     try:
-        # Use mammoth to convert DOC to plain text
-        result = mammoth.extract_raw_text(file)
+        with io.BytesIO(file.read()) as temp_file:
+            result = mammoth.extract_raw_text(temp_file)
         return result.value
     except Exception as e:
         st.error(f"Error extracting text from DOC file: {e}")
@@ -151,8 +151,7 @@ uploaded_files = st.file_uploader("Upload multiple resumes (.docx, .doc, .pdf)",
 if st.button("Analyze Resumes"):
     if uploaded_files and required_skills and optional_skills:
         results = []
-        progress_bar = st.progress(0)
-        for idx, uploaded_file in enumerate(uploaded_files):
+        for uploaded_file in uploaded_files:
             resume_text = extract_text_from_file(uploaded_file)
             if resume_text:
                 required_skills_found, optional_skills_found, required_match_percentage, optional_match_percentage = evaluate_resume(resume_text, required_skills, optional_skills)
@@ -169,8 +168,6 @@ if st.button("Analyze Resumes"):
                     "Experience Summary": experience_summary,
                     "Education Summary": education_summary,
                 })
-            # Update progress bar
-            progress_bar.progress((idx + 1) / len(uploaded_files))
         
         if results:
             results_df = pd.DataFrame(results)
