@@ -1,5 +1,4 @@
 import os
-import docx
 import pandas as pd
 from PyPDF2 import PdfReader
 import streamlit as st
@@ -7,7 +6,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import re
 import io
-import mammoth
+import docx2txt
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -31,16 +30,7 @@ safety_settings = [
 
 def extract_text_from_docx(file):
     try:
-        doc = docx.Document(file)
-        text = ""
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + "\n"
-
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    text += cell.text + "\n"
-
+        text = docx2txt.process(file)
         return text
     except Exception as e:
         st.error(f"Error extracting text from DOCX file: {e}")
@@ -57,15 +47,6 @@ def extract_text_from_pdf(file):
         st.error(f"Error extracting text from PDF file: {e}")
         return ""
 
-def extract_text_from_doc(file):
-    try:
-        with io.BytesIO(file.read()) as temp_file:
-            result = mammoth.extract_raw_text(temp_file)
-        return result.value
-    except Exception as e:
-        st.error(f"Error extracting text from DOC file: {e}")
-        return ""
-
 def extract_text_from_file(file):
     try:
         content_type = file.type
@@ -73,12 +54,10 @@ def extract_text_from_file(file):
 
         if content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
             return extract_text_from_docx(io.BytesIO(content))
-        elif content_type == "application/msword":
-            return extract_text_from_doc(io.BytesIO(content))
         elif content_type == "application/pdf":
             return extract_text_from_pdf(io.BytesIO(content))
         else:
-            st.warning("Unsupported file format. Please upload .docx, .doc, or .pdf files.")
+            st.warning("Unsupported file format. Please upload .docx or .pdf files.")
             return ""
     except Exception as e:
         st.error(f"Error extracting text from file: {e}")
@@ -146,7 +125,7 @@ with col1:
 with col2:
     optional_skills = st.text_area("Enter Optional Skills (one skill per line):", height=200)
 
-uploaded_files = st.file_uploader("Upload multiple resumes (.docx, .doc, .pdf)", accept_multiple_files=True)
+uploaded_files = st.file_uploader("Upload multiple resumes (.docx, .pdf)", accept_multiple_files=True)
 
 if st.button("Analyze Resumes"):
     if uploaded_files and required_skills and optional_skills:
