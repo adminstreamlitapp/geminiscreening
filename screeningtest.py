@@ -3,17 +3,7 @@ import docx
 import pandas as pd
 from PyPDF2 import PdfReader
 import streamlit as st
-import google.generativeai as genai
-from dotenv import load_dotenv
-import pythoncom
-import win32com.client
 import re
-
-# Load environment variables from a .env file
-load_dotenv()
-
-# Configure generative AI model with the Google API key
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Model configuration for text generation
 generation_config = {
@@ -42,16 +32,6 @@ def extract_text_from_docx(file_path):
     
     return text
 
-def extract_text_from_doc(file_path):
-    pythoncom.CoInitialize()
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False
-    doc = word.Documents.Open(file_path)
-    text = doc.Range().Text
-    doc.Close(False)
-    word.Quit()
-    return text
-
 def extract_text_from_pdf(file_path):
     text = ""
     with open(file_path, "rb") as f:
@@ -63,21 +43,14 @@ def extract_text_from_pdf(file_path):
 def extract_text_from_file(file_path):
     if file_path.endswith('.docx'):
         return extract_text_from_docx(file_path)
-    elif file_path.endswith('.doc'):
-        return extract_text_from_doc(file_path)
     elif file_path.endswith('.pdf'):
         return extract_text_from_pdf(file_path)
     else:
         return ""
 
 def generate_response_from_gemini(input_text, prompt):
-    llm = genai.GenerativeModel(
-        model_name="gemini-pro",
-        generation_config=generation_config,
-        safety_settings=safety_settings,
-    )
-    output = llm.generate_content(f"{prompt}\n\n{input_text}")
-    return output.text
+    # This is a placeholder for the Gemini AI response.
+    return "This is a placeholder for the Gemini AI response."
 
 def normalize_text(text):
     return re.sub(r'\s+', '', text.lower())
@@ -132,7 +105,7 @@ if st.button("Analyze Resumes"):
         for resume_file_name in os.listdir(resumes_directory):
             if not resume_file_name.startswith('~$'):
                 resume_path = os.path.join(resumes_directory, resume_file_name)
-                if os.path.isfile(resume_path) and (resume_file_name.endswith('.docx') or resume_file_name.endswith('.doc') or resume_file_name.endswith('.pdf')):
+                if os.path.isfile(resume_path) and (resume_file_name.endswith('.docx') or resume_file_name.endswith('.pdf')):
                     resume_text = extract_text_from_file(resume_path)
                     required_skills_found, optional_skills_found, required_match_percentage, optional_match_percentage = evaluate_resume(resume_text, required_skills, optional_skills)
                     
